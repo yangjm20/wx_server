@@ -1,6 +1,7 @@
 
 var express = require('express');
 var router = express.Router();
+var WXBizDataCrypt = require('./WXBizDataCrypt')
 
 const {IsExercisedModel,UserInfoModel, AnswerModel, AnswerHistoryModel, ErrorsModel, UserAnswerAndAnswerModel} = require('../db/db_test')
 
@@ -219,6 +220,7 @@ router.post('/getOpenId', async (req, res) => {
         }
         let r1 = await Ut.promiseReq(opts);
         r1 = JSON.parse(r1);
+        console.log(r1);
         console.log(r1.openid);
 
 
@@ -228,16 +230,16 @@ router.post('/getOpenId', async (req, res) => {
                 new UserInfoModel({userId:r1.openid,isBuy:[{lessonIsBuy:false},{lessonIsBuy:false},{lessonIsBuy:false},{lessonIsBuy:false}]}).save(function (err,userInfo) {
 
                     if (userInfo) {
-
+                        console.log("userInfo---")
                         IsExercisedModel.findOne({userId:r1.openid},function (err,isExercise) {
                             if(!isExercise){
 
                                 new IsExercisedModel({userId:r1.openid,lessons:lessons['lessons']}).save(function (err,saveIsExe) {
                                     if(saveIsExe){
-                                        res.send({code: 0, userInfo:userInfo})
+                                        res.send({code: 0,session_key:r1.session_key, userInfo:userInfo})
                                         console.log("创建新用户成功")
                                     }else{
-                                        res.send({code: 3, msg:"保存是否练习失败"})
+                                        res.send({code: 3, session_key:r1.session_key,msg:"保存是否练习失败"})
                                         console.log("保存是否练习失败")
                                     }
                                 })
@@ -245,12 +247,12 @@ router.post('/getOpenId', async (req, res) => {
                         })
 
                     } else {
-                        res.send({code: 1, msg:"创建新用户失败"})
+                        res.send({code: 1, session_key:r1.session_key,msg:"创建新用户失败"})
                         console.log("创建新用户失败")
                     }
                 })
             }else{
-                res.send({code: 2, userInfo:userInfos})
+                res.send({code: 2, session_key:r1.session_key,userInfo:userInfos})
                 console.log("用户存在")
             }
         })
@@ -349,11 +351,22 @@ router.get('/getAnswerAndUserAnswerOps', function (req, res) {
         }
     })
 })
+
+router.post('/getPhone',function (req,res) {
+
+    const {session_key,encryptedData,iv}=req.body;
+
+    var appId = 'wxa372f08bd326c566'
+    console.log("--------------")
+
+    console.log(appId+"----"+session_key+"---"+encryptedData+"---"+iv);
+
+    var pc = new WXBizDataCrypt(appId, session_key)
+
+    var data = pc.decryptData(encryptedData , iv)
+
+    console.log('解密后 data: ', data)
+    res.send({code:0,data:data})
+})
 module.exports = router;
-
-
-
-
-
-
 

@@ -48,8 +48,11 @@ const lessonDetailSchema = mongoose.Schema({
     lesson: [{
         sectionName: {type: String, required: true},
         section: [{
-            url: {type: String, required: true},
+            url: {type: String},
             math_name: {type: String, required: true},
+            isUpload:{type:Boolean,required:true},
+            isUploadExercise:{type:Boolean,required:true},
+            isUploadAnswer:{type:Boolean,required:true},
             TD: {type: String}
         }]
     }]
@@ -96,7 +99,8 @@ const isExercisedSchema=mongoose.Schema({
             vodies: [
                 {
                     vodieId:{type:String,required:true},
-                    isExercised:{type:Boolean,required:true}
+                    isExercised:{type:Boolean,required:true},
+                    isWatched:{type:Boolean,required:true},
 
                 }
             ]
