@@ -26,27 +26,13 @@ router.get('/', function (req, res, next) {
 
 
 router.post('/getIsExercised',function (req,res) {
-    console.log("fdsfa")
     const {userId}=req.body;
-    console.log(userId)
     IsExercisedModel.findOne({userId},function (err,isExercised) {
         if(isExercised){
-            console.log(isExercised);
+            console.log("查找用户是否答题记录成功");
             res.send({code:0,isExercised:isExercised})
         }else{
-            res.send({code:1,msg:"不存在已经做的记录"})
-        }
-    })
-})
-
-router.get('/getUserAnswer', function (req, res) {
-    const {id} = req.query;
-
-    UserAnswerModel.findOne({id}, function (err, userAnswer) {
-        if (userAnswer) {
-            res.send({code: 0, userAnswer: userAnswer})
-        } else {
-            res.send({code: 1, msg: '未找到该用户关于此题的答案'})
+            res.send({code:1,msg:"不存在用户是否答题记录"})
         }
     })
 })
@@ -59,17 +45,13 @@ router.post('/getScoreDetail', function (req, res) {
     var data = new Date();
     var time = data.getFullYear() + '-' + data.getMonth() + '-' + data.getDay();
 
-    var errorIndex = [null];
-    var userAnswers = [null];
+    var errorIndex=[];
+    var userAnswers=[];
 
 
     AnswerModel.findOne({exerciseId}, function (err, exercises) {
         if (exercises) {
             console.log("答案存在")
-            console.log("-----------")
-            console.log(exercises.answers)
-            console.log(answerStudent)
-            console.log("-----------")
 
             for (var i = 0, z = 0, j = 0; i < exercises.answers.length; i++, j += 2) {
                 if (answerStudent[j].toString() == exercises.answers[i].answer) {
@@ -91,7 +73,7 @@ router.post('/getScoreDetail', function (req, res) {
                                 if(answerhis){
                                     console.log("找到更新的答题历史记录")
 
-                                    if(errorIndex){
+                                    if(errorIndex.length!=0){
                                         console.log("当前有做错题的题目")
                                         ErrorsModel.findOne({id},function (err,errorsHis) {
                                             if(errorsHis){
@@ -105,42 +87,70 @@ router.post('/getScoreDetail', function (req, res) {
                                                                 console.log("查找更新的错题历史记录成功")
                                                                 res.send({code:0,score:sumScore,answers:exercises.answers,answerhistory:answerhis,error:errors})
                                                             }else{
-                                                                console.log("未能找到更新的错题历史记录")
+                                                                console.log("更新答题记录成功但未能找到更新的错题历史记录")
+                                                                res.send({code:1,msg:"更新答题记录成功但未能找到更新的错题历史记录"})
                                                             }
                                                         })
                                                     }else{
-                                                        console.log("错题历史记录更新失败")
-                                                        res.send({code:1,msg:错题历史记录更新失败})
+                                                        console.log("更新答题记录成功但错题历史记录更新失败")
+                                                        res.send({code:2,msg:"更新答题记录成功但错题历史记录更新失败"})
                                                     }
                                                 })
                                             }else{
-                                                console.log("无错题历史记录，需要创建新的错题记录")
+                                                console.log("更新答题记录成功但无错题历史记录，需要创建新的错题记录")
                                                 new ErrorsModel({id, userId, lessonId, sessionId, vodieId, time, errorIndex}).save(function (err, errors) {
-                                                    console.log("创建错题记录")
-                                                    res.send({
-                                                        code: 0,
-                                                        score: sumScore,
-                                                        answers: exercises.answers,
-                                                        answerhistory: answerhis,
-                                                        error: errors
-                                                    })
+                                                    if(errors){
+                                                        console.log("更新答题记录成功并且创建新的错题记录成功")
+                                                        res.send({
+                                                            code: 3,
+                                                            score: sumScore,
+                                                            answers: exercises.answers,
+                                                            answerhistory: answerhis,
+                                                            error: errors
+                                                        })
+                                                    }else{
+                                                        res.send({code:4,msg:"更新答题记录成功但创建新的错题记录失败"})
+                                                    }
+
                                                 })
                                             }
                                         })
                                     }else{
-                                       console.log("当前没有做错的题目，无需添加")
-                                        res.send({code:1,msg:"当前没有做错的题目，无需添加"})
+                                        console.log("更新答题记录成功但这次没有做错的题目，查看之前有无记录，有删除")
+                                        ErrorsModel.findOne({id},function (error,errs) {
+                                            if(errs){
+                                                ErrorsModel.deleteOne({id},function (err,removeError) {
+
+                                                    if(removeError.ok==1){
+                                                        console.log("更新答题记录成功，已经删除之前的错题记录")
+                                                        res.send({code:5,score: sumScore,
+                                                            answers: exercises.answers,
+                                                            answerhistory: answerhis})
+                                                    }else{
+                                                        console.log("更新答题记录成功，已经删除之前的错题记录")
+                                                        res.send({code:6,msg:"更新答题记录成功但删除错题记录失败"})
+                                                    }
+
+                                                })
+                                            }else{
+                                                console.log("更新答题记录成功,但之前也未做错")
+                                                res.send({code:7,score: sumScore,
+                                                    answers: exercises.answers,
+                                                    answerhistory: answerhis})
+                                            }
+                                        })
+
                                     }
                                 }else{
-                                    console.log("未找到更新的历史记录")
-                                    res.send({code:1,msg:"未找到更新的历史记录"});
+                                    console.log("未找到更新的答题历史记录")
+                                    res.send({code:8,msg:"未找到更新答题历史记录"});
                                 }
                             })
 
 
                         }else{
                             console.log("更新答题历史记录失败")
-                            res.send({code:1,msg:"更新答题历史记录失败"})
+                            res.send({code:9,msg:"更新答题历史记录失败"})
                         }
                     })
 
@@ -148,43 +158,58 @@ router.post('/getScoreDetail', function (req, res) {
                 }else{
                     console.log("无答题历史记录，需要重新创建")
                     new AnswerHistoryModel({id, userId, time, lessonId, sessionId, vodieId, sumScore}).save(function (err, answerhis) {
-                        console.log("创建答题历史记录");
-                        console.log(answerhis)
-                        if (errorIndex) {
-                            console.log("当前有做错题的题目")
-                            ErrorsModel.findOne({id},function (err,errorhis) {
-                                if(errorhis){
-                                    console.log("有错题历史记录，需要覆盖旧的记录")
-                                    ErrorsModel.update({id},{$set:{userId,lessonId,sessionId,vodieId,time,errorIndex}},function (err,updateErrosHis) {
-                                        if(updateErrosHis.ok==1){
-                                            console.log("更新错题记录成功")
-                                            ErrorsModel.findOne({id},function (error,errorHis) {
-                                                res.send({code:0,score:sumScore,answers:exercises.answers,answerhistory: answerhis,error:errorHis})
-                                            })
-                                        }else{
-                                            res.send({code:1,msg:"用户购买信息更新失败"})
-                                        }
-                                    })
 
-                                }else{
-                                    console.log("无错题历史记录，需要创建新的错题记录")
-                                    new ErrorsModel({id, userId, lessonId, sessionId, vodieId, time, errorIndex}).save(function (err, errors) {
-                                        console.log("创建错题记录")
-                                        res.send({
-                                            code: 0,
-                                            score: sumScore,
-                                            answers: exercises.answers,
-                                            answerhistory: answerhis,
-                                            error: errors
+                        if(answerhis){
+                            console.log("创建答题历史记录成功");
+                            if (errorIndex) {
+                                console.log("当前有做错题的题目")
+                                ErrorsModel.findOne({id},function (err,errorhis) {
+                                    if(errorhis){
+                                        console.log("创建答题历史记录成功,有错题历史记录，需要覆盖旧的记录")
+                                        ErrorsModel.update({id},{$set:{userId,lessonId,sessionId,vodieId,time,errorIndex}},function (err,updateErrosHis) {
+                                            if(updateErrosHis.ok==1){
+
+                                                ErrorsModel.findOne({id},function (error,errorHis) {
+                                                    console.log("创建答题历史记录成功,更新错题记录成功")
+                                                    res.send({code:10,score:sumScore,answers:exercises.answers,answerhistory: answerhis,error:errorHis})
+                                                })
+                                            }else{
+                                                console.log("创建答题历史记录成功,更新错题记录失败")
+                                                res.send({code:11,msg:"创建答题历史记录成功,更新错题记录失败"})
+                                            }
                                         })
-                                    })
 
-                                }
-                            })
-                        } else {
-                            console.log("当前没有做错的题目")
-                            res.send({code: 1, score: sumScore, answers: exercises.answers, answerhistory: answerhis})
+                                    }else{
+                                        console.log("创建答题历史记录成功，无错题历史记录，需要创建新的错题记录")
+                                        new ErrorsModel({id, userId, lessonId, sessionId, vodieId, time, errorIndex}).save(function (err, errors) {
+                                            if(errors){
+                                                console.log("创建答题历史记录成功，创建错题记录成功")
+                                                res.send({
+                                                    code: 12,
+                                                    score: sumScore,
+                                                    answers: exercises.answers,
+                                                    answerhistory: answerhis,
+                                                    error: errors
+                                                })
+                                            }else{
+                                                console.log("创建答题历史记录成功，创建错题记录失败")
+                                                res.send({
+                                                    code: 13,
+                                                    msg:"创建答题历史记录成功，创建错题记录失败"
+                                                })
+                                            }
 
+                                        })
+
+                                    }
+                                })
+                            } else {
+                                console.log("创建答题历史记录成功,当前没有做错的题目")
+                                res.send({code: 14, score: sumScore, answers: exercises.answers, answerhistory: answerhis})
+                            }
+                        }else{
+                            console.log("创建答题历史记录失败");
+                            res.send({code:15,msg:"创建答题历史记录失败"})
                         }
 
 
@@ -195,74 +220,13 @@ router.post('/getScoreDetail', function (req, res) {
 
         } else {
             console.log('还未上传答案')
-            res.send({code: 2, msg: '答案不存在'})
+            res.send({code: 16, msg: '答案不存在'})
         }
 
     })
 })
 
-router.post('/getOpenId', async (req, res) => {
-    const Ut = require('../common/utils');
-    const lessons=isExercised.isExercised[0];
 
-    try {
-        const {code} = req.body;
-
-        /*个人的微信id
-        let appId = "wxd2eceb6c21234981";
-        let secret = "abe92e02ac154a8a79b89a319e030675";*/
-
-        let appId = "wxa372f08bd326c566";
-        let secret = "948bf486f197ebd3f1090ba447308435"
-
-        let opts = {
-            url: `https://api.weixin.qq.com/sns/jscode2session?appid=${appId}&secret=${secret}&js_code=${code}&grant_type=authorization_code`
-        }
-        let r1 = await Ut.promiseReq(opts);
-        r1 = JSON.parse(r1);
-        console.log(r1);
-        console.log(r1.openid);
-
-
-//判断用户是否注册
-        UserInfoModel.findOne({userId:r1.openid},function (errors,userInfos) {
-            if(!userInfos){
-                new UserInfoModel({userId:r1.openid,isBuy:[{lessonIsBuy:false},{lessonIsBuy:false},{lessonIsBuy:false},{lessonIsBuy:false}]}).save(function (err,userInfo) {
-
-                    if (userInfo) {
-                        console.log("userInfo---")
-                        IsExercisedModel.findOne({userId:r1.openid},function (err,isExercise) {
-                            if(!isExercise){
-
-                                new IsExercisedModel({userId:r1.openid,lessons:lessons['lessons']}).save(function (err,saveIsExe) {
-                                    if(saveIsExe){
-                                        res.send({code: 0,session_key:r1.session_key, userInfo:userInfo})
-                                        console.log("创建新用户成功")
-                                    }else{
-                                        res.send({code: 3, session_key:r1.session_key,msg:"保存是否练习失败"})
-                                        console.log("保存是否练习失败")
-                                    }
-                                })
-                            }
-                        })
-
-                    } else {
-                        res.send({code: 1, session_key:r1.session_key,msg:"创建新用户失败"})
-                        console.log("创建新用户失败")
-                    }
-                })
-            }else{
-                res.send({code: 2, session_key:r1.session_key,userInfo:userInfos})
-                console.log("用户存在")
-            }
-        })
-        //res.json(r1);
-    } catch (e) {
-        console.log(e)
-        res.json(e)
-    }
-
-})
 
 router.get('/getHistory', function (req, res) {
     const {userId} = req.query;
@@ -354,19 +318,32 @@ router.get('/getAnswerAndUserAnswerOps', function (req, res) {
 
 router.post('/getPhone',function (req,res) {
 
-    const {session_key,encryptedData,iv}=req.body;
+    const {userId,session_key,encryptedData,iv}=req.body;
 
     var appId = 'wxa372f08bd326c566'
     console.log("--------------")
 
-    console.log(appId+"----"+session_key+"---"+encryptedData+"---"+iv);
+    console.log(userId+"----"+appId+"----"+session_key+"---"+encryptedData+"---"+iv);
 
     var pc = new WXBizDataCrypt(appId, session_key)
 
     var data = pc.decryptData(encryptedData , iv)
 
     console.log('解密后 data: ', data)
-    res.send({code:0,data:data})
+    console.log(data.phoneNumber);
+    var phone=data.phoneNumber;
+    UserInfoModel.update({userId},{$set:{phone:phone}},function (error,userInfoUpdate) {
+        if(userInfoUpdate.ok==1){
+            console.log("手机号更新成功")
+            UserInfoModel.findOne({userId},function (error,userInfo) {
+                console.log(userInfo);
+                res.send({code:0,userInfo:userInfo,data:data})
+            })
+        }else{
+            res.send({code:1,msg:"用户手机号更新失败"})
+        }
+    })
+
 })
 module.exports = router;
 

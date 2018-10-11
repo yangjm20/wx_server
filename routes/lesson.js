@@ -34,7 +34,13 @@ router.post('/saveLesson', function (req, res) {
 
 router.get('/getLesson', function (req, res) {
     LessonModel.find(function (err, lessons) {
-        return res.json({code: 0, data: lessons})
+        if(lessons) {
+            console.log("查找成功")
+            return res.json({code: 0, data: lessons})
+        }else{
+            res.send({code:1,msg:"无课程信息，建议添加相关课程"})
+        }
+
     })
 })
 
@@ -51,16 +57,30 @@ router.post('/saveLessonDetail', function (req, res) {
         } else {
 
             new LessonDetailModel({lessonName, lesson: array}).save(function (err, lesson) {
-                res.send({code: 0, data: {lessonDetail: lesson}})
+                if(lesson){
+                    console.log("新建成功")
+                    res.send({code: 0, data: {lessonDetail: lesson}})
+                }else{
+                    console.log("新建失败")
+                    res.send({code: 2, msg:"新建课程信息失败"})
+                }
+
             })
         }
     })
 })
 
 router.get('/getLessonDetail', function (req, res) {
-    console.log("ff")
+
     LessonDetailModel.find(function (err, lessonsDetail) {
-        return res.json({code: 0, data: lessonsDetail})
+        if(lessonsDetail){
+            console.log("查找到相关的信息")
+            return res.json({code: 0, data: lessonsDetail})
+        }else{
+            console.log("没有查找到课程详细信息")
+            return res.json({code: 1, msg:"没有查找的课程详情记录，请先添加课程详细信息"})
+        }
+
     })
 })
 
@@ -69,7 +89,13 @@ router.get('/getLessonDetailById', function (req, res) {
     console.log(lessonId)
 
     LessonDetailModel.find(function (err, lessonsDetail) {
-        return res.json({code: 0, data: lessonsDetail[lessonId]})
+        if(lessonsDetail[lessonId]){
+            console.log("课程信息查找成功")
+            return res.json({code: 0, data: lessonsDetail[lessonId]})
+        }else{
+            console.log("课程信息查找失败")
+            res.send({code: 1, msg:"课程信息查找失败"})
+        }
     })
 })
 
