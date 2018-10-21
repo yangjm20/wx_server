@@ -13,8 +13,6 @@ var answerHistoryRouter = require('./routes/answerHistory');
 var errorsRouter = require('./routes/errors');
 var userInfoRouter = require('./routes/userInfo');
 
-
-
 var app = express();
 
 // view engine setup

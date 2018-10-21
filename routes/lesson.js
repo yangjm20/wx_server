@@ -20,12 +20,12 @@ const lessonDe = require('../data/high_math1.js')
 //3.返回响应数据
 
 router.post('/saveLesson', function (req, res) {
-    const {lujing, title, subtitle, flag, file_name} = req.body
+    const {lujing, title, subtitle, flag, file_name,price} = req.body
     LessonModel.findOne({title}, function (err, lesson) {
         if (lesson) {
             res.send({code: 1, msg: '此课程已经存在'})
         } else {
-            new LessonModel({lujing, title, subtitle, flag, file_name}).save(function (err, lesson) {
+            new LessonModel({lujing, title, subtitle, flag, file_name,price}).save(function (err, lesson) {
                 res.send({code: 0, data: {lesson: lesson}})
             })
         }

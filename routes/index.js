@@ -5,7 +5,7 @@ var WXBizDataCrypt = require('./WXBizDataCrypt')
 
 const {IsExercisedModel,UserInfoModel, AnswerModel, AnswerHistoryModel, ErrorsModel, UserAnswerAndAnswerModel} = require('../db/db_test')
 
-const isExercised=require('../data/isExercised.js')
+
 /* GET home page. */
 router.get('/', function (req, res, next) {
     res.render('index', {title: 'Express'});
@@ -66,7 +66,7 @@ router.post('/getScoreDetail', function (req, res) {
             AnswerHistoryModel.findOne({id},function (err,answerHis) {
                 if(answerHis){
                     console.log("答题历史记录存在，覆盖旧的记录");
-                    AnswerHistoryModel.update({id},{$set:{userId,time,lessonId,sessionId,vodieId,sumScore}},function (err,updateAnsHis) {
+                    AnswerHistoryModel.updateOne({id},{$set:{userId,time,lessonId,sessionId,vodieId,sumScore}},function (err,updateAnsHis) {
                         if(updateAnsHis.ok==1){
                             console.log("更新答题历史记录成功")
                             AnswerHistoryModel.findOne({id},function (err,answerhis) {
@@ -161,7 +161,7 @@ router.post('/getScoreDetail', function (req, res) {
 
                         if(answerhis){
                             console.log("创建答题历史记录成功");
-                            if (errorIndex) {
+                            if (errorIndex.length!=0) {
                                 console.log("当前有做错题的题目")
                                 ErrorsModel.findOne({id},function (err,errorhis) {
                                     if(errorhis){
@@ -231,14 +231,25 @@ router.post('/getScoreDetail', function (req, res) {
 router.get('/getHistory', function (req, res) {
     const {userId} = req.query;
 
-    AnswerHistoryModel.find({userId}, function (err, answerHistory) {
-        if (!answerHistory) {
-            res.send({code: 1, msg: '无历史记录'})
-        } else {
-            res.send({code: 0, history: answerHistory})
-        }
+    UserInfoModel.findOne({userId}, function (err, userInfo) {
+        if (userInfo) {
+            console.log("查找用户信息成功")
+            AnswerHistoryModel.find({userId}, function (err, answerHistory) {
+                if (!answerHistory) {
+                    res.send({code: 1, msg: '无历史记录'})
+                } else {
+                    res.send({code: 0, memberInfo: userInfo,history: answerHistory})
+                }
 
+            })
+
+        } else {
+            res.send({code: 1, msg: '用户信息不存在'})
+        }
     })
+
+
+
 })
 
 

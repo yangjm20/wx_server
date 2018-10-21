@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 
-const {AnswerModel, ErrorsModel, UserAnswerAndAnswerModel} = require('../db/db_test')
+const {ExercisesModel,AnswerModel, ErrorsModel, UserAnswerAndAnswerModel} = require('../db/db_test')
 
 
 router.get('/getErrors', function (req, res) {
@@ -28,12 +28,15 @@ router.get('/getErrorsById', function (req, res) {
                 if (answersOps) {
 
                     AnswerModel.findOne({exerciseId}, function (err, answer) {
-                        if (answer) {
-                            res.send({code: 0, answerOps: answersOps, answer: answer, errors: errors})
-                        } else {
+                        ExercisesModel.findOne({exerciseId}, function (err, exercises) {
+                            if (answer) {
+                                res.send({code: 0, exercises:exercises,answerOps: answersOps, answer: answer, errors: errors})
+                            } else {
 
-                            res.send({code: 3, msg: '此题老师还未出答案'})
-                        }
+                                res.send({code: 3, msg: '此题老师还未出答案'})
+                            }
+                        })
+
                     })
                 } else {
                     res.send({code: 2, msg: '此用户还未作答此题'})

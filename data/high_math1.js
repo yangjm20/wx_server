@@ -2,8 +2,9 @@ let high_math = [
     {
     sectionName:"一、函数、极限与连续",
         section: [
+
             {
-                url:"https://www.talltree.com.cn/files/1.1%E5%87%BD%E6%95%B0%E7%9A%84%E6%A6%82%E5%BF%B5%E5%8F%8A%E8%A1%A8%E7%A4%BA%E6%B3%95%20.mp4",
+                url:"https://www.talltree.com.cn/files/1.1%E5%87%BD%E6%95%B0%E7%9A%84%E6%A6%82%E5%BF%B5%E5%8F%8A%E8%A1%A8%E7%A4%BA%E6%B3%95.mp4",
                 math_name: "1.1 函数的概念及表示法",
                 isUpload:true,
                 isUploadExercise:false,
@@ -134,7 +135,7 @@ let high_math = [
             },
             {
                 url:"https://www.talltree.com.cn/files/1.19%E5%87%BD%E6%95%B0%E8%BF%9E%E7%BB%AD%E7%9A%84%E6%A6%82%E5%BF%B5.mp4",
-                math_name: "11.19 函数连续的概念",
+                math_name: "1.19 函数连续的概念",
                 isUpload:true,                isUploadExercise:false,
                 isUploadAnswer:false,
                 TD: '08:38'

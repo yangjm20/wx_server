@@ -1,4 +1,4 @@
-let a000 = [
+let answers = [
             {
                 answerId:'0' ,
                 answer:'3',
@@ -27,4 +27,4 @@ let a000 = [
 
 
 ];
-module.exports = {answers: a000};
+module.exports = {answers: answers};

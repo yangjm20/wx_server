@@ -4,7 +4,7 @@ var router = express.Router();
 
 const { ExercisesModel,LessonDetailModel} = require('../db/db_test')
 
-const exercises = require('../data/e000.js')
+const exercises = require('../data/exercises/e0021.js')
 
 
 router.post('/saveExercise', function (req, res) {

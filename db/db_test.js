@@ -30,12 +30,14 @@ const lessonSchema = mongoose.Schema({
     title: {type: String, required: true},
     subtitle: {type: String, required: true},
     flag: {type: Boolean, required: true},
-    file_name: {type: String, required: true}
+    file_name: {type: String, required: true},
+    price:{type:String,required:true}
 })
 
 const userInfoSchema = mongoose.Schema({
     userId:{type:String,require:true},
     phone:{type:String},
+    isMember:{type:Boolean,required:true},
     isBuy:[{
         lessonIsBuy:{type:Boolean,require:true},
         buyDate:{type:String},
